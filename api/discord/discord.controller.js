@@ -13,13 +13,18 @@ const setUserToInactive = (email, end_date) => {
     connection.query(sql);
 }
 
+const serUserToActive = (email) => {
+    const sql = `UPDATE discord_users SET active='1', membership_enddate = ${null} WHERE email='${email}'`;
+    connection.query(sql);
+}
+
 module.exports = {
     // Routes
     connectAPI: (req, res) => {
         res.json('Status OK');
     },
     checkIfUsersIsNotMembers: () => {
-        const sql = 'SELECT * FROM discord_users WHERE active = 1';
+        const sql = 'SELECT * FROM discord_users WHERE deleted = 0';
         connection.query(sql, (err, results) => {
             let interval;
             let cont = 0;
@@ -31,10 +36,10 @@ module.exports = {
                     const params = { id: user.website_id, email: user.email };
                     cont++;
                     getIfUserIsMember(params).then((result) => {
-                        /*result[0].status = 'cancelled';
-                        result[0].end_date = '2021-09-12T00:46:50';*/
-                        if ( result.length === 0 || ( result.length > 0 && result[0].status === 'cancelled' ) ) {
-                            setUserToInactive(user.email, result[0].end_date);
+                        if ( result.length === 0 || ( result.length > 0 && result[0].status === 'cancelled' && user.active === 1 ) ) {
+                            setUserToInactive(user.email, result[0] ? result[0].end_date : new Date().toISOString().slice(0, 19).replace('T', ' '));
+                        } else if ( result.length > 0 && user.active === 0 && result[0].status === 'active' ) {
+                            serUserToActive(user.email);
                         }
                     });
                     if ( cont === total ) {
@@ -111,7 +116,7 @@ module.exports = {
     updateDiscordUser: (req, res)=> {
         const {id} = req.params;
         const {username, email, active} = req.body;
-        const sql = `UPDATE discord_users SET username='${username}', email='${email}', active='${active}' WHERE id=${id}`;
+        const sql = `UPDATE discord_users SET discord_username='${username}', email='${email}', active='${active}' WHERE id=${id}`;
         connection.query(sql, (err, results) => {
             if ( err ) throw err;
             res.json(results);

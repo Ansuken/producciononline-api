@@ -10,8 +10,8 @@ const {checkIfUsersIsNotMembers} = require('./api/discord/discord.controller');
 const PORT = process.env.PORT || 3050;
 const app = express();
 
-// Cron AT MIDNIGHT '00 00 00 * * 1'
-const job = new CronJob('30 28 14 * * *', function() {
+// Cron AT MIDNIGHT MONDAY '00 00 00 * * 1'
+const job = new CronJob('00 00 00 * * 1', function() {
     console.log('Job triggered', new Date());
     checkIfUsersIsNotMembers();
 });
