@@ -27,7 +27,14 @@ module.exports = {
                     const subscriptionsUrl = baseUrl + version + 'subscriptions';
                     axios.get(subscriptionsUrl, { params: subscriptionsParams })
                         .then((response) => {
-                            res.json(response.data);
+                            let data = [];
+                            for ( let item of response.data ) {
+                                if ( item.status === 'active' ) {
+                                    data.push(item);
+                                }
+                            }
+                            console.log(data);
+                            res.json(data);
                         }), (error) => {
                             res.json(error);
                         };
